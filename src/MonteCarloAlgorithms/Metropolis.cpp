@@ -25,17 +25,10 @@ Metropolis::Metropolis(PhysicalSystem* ps, const char* inputFile)
 
   // Allocate space to store observables and other statistics
   if (physical_system->numObservables > 0) {
-
-     averagedObservables         = new ObservableType[physical_system->numObservables];
-     averagedObservablesSquared  = new ObservableType[physical_system->numObservables];
-     standardDeviations          = new ObservableType[physical_system->numObservables];
-
-    for (unsigned int i=0; i<physical_system->numObservables; i++) {
-      averagedObservables[i]         = 0.0;
-      averagedObservablesSquared[i]  = 0.0;
-      standardDeviations[i]          = 0.0;
-    }
-
+    averagedObservables.assign(physical_system->numObservables, 0.0);
+    averagedObservablesSquared.assign(physical_system->numObservables, 0.0);
+    standardDeviations.assign(physical_system->numObservables, 0.0);
+    standardErrors.assign(physical_system->numObservables, 0.0);
   }
 
   if (std::filesystem::exists("mc.dat")) 
@@ -62,10 +55,6 @@ Metropolis::Metropolis(PhysicalSystem* ps, const char* inputFile)
 //Destructor
 Metropolis::~Metropolis()
 {
-
-  delete[] averagedObservables;
-  delete[] averagedObservablesSquared;
-  delete[] standardDeviations;
 
   fclose(timeSeriesFile);
 
@@ -160,11 +149,13 @@ void Metropolis::run()
         lastBackUpTime = currentTime;
       }
 
-      if (MCStepsPerformed % configurationWriteInterval == 0) {
+      if ((configurationWriteInterval != 0) && (MCStepsPerformed % configurationWriteInterval == 0)) {
         sprintf(fileName, "configurations/config%012lu.dat", MCStepsPerformed);
         physical_system -> writeConfiguration(0, fileName);
-        sprintf(fileName, "configurations/config%012lu.xyz", MCStepsPerformed);
-        physical_system -> writeConfiguration(1, fileName);
+        //sprintf(fileName, "configurations/config%012lu.xyz", MCStepsPerformed);
+        //physical_system -> writeConfiguration(1, fileName);
+        sprintf(fileName, "configurations/all-configs.dat");
+        physical_system -> writeConfiguration(2, fileName);
       }
 
     }
@@ -300,11 +291,11 @@ void Metropolis::readCheckPointFile(const char* fileName)
             }
             continue;
           }
-          else if (key == "standardDeviations") {
+          else if (key == "standardErrors") {
             unsigned int counter = 0;
             while (lineStream && counter < physical_system->numObservables) {
-              lineStream >> standardDeviations[counter];
-              //std::cout << "Metropolis: standardDeviations[" << counter << "] = " << standardDeviations[counter] << "\n";
+              lineStream >> standardErrors[counter];
+              //std::cout << "Metropolis: standardErrors[" << counter << "] = " << standardErrors[counter] << "\n";
               counter++;
             }
             continue;
@@ -351,6 +342,7 @@ void Metropolis::readCheckPointFile(const char* fileName)
 
   // Restore averagedObservables and averagedObservablesSquared for accumulation
   for (unsigned int i=0; i<physical_system->numObservables; i++) {
+    standardDeviations[i] = standardErrors[i] * sqrt(double(MCStepsPerformed));
     averagedObservablesSquared[i] = (standardDeviations[i] * standardDeviations[i] + averagedObservables[i] * averagedObservables[i]) * double(MCStepsPerformed);
     averagedObservables[i] *= double(MCStepsPerformed);
   }
@@ -362,8 +354,8 @@ void Metropolis::accumulateObservables()
 {
 
   for (unsigned int i=0; i<physical_system->numObservables; i++) {
-    averagedObservables[i] += physical_system -> observables[i];
-    averagedObservablesSquared[i]  += physical_system -> observables[i] * physical_system -> observables[i];
+    averagedObservables[i]        += physical_system -> observables[i];
+    averagedObservablesSquared[i] += physical_system -> observables[i] * physical_system -> observables[i];
   }
 
 }
@@ -373,10 +365,10 @@ void Metropolis::calculateAveragesAndVariances()
 {
 
   for (unsigned int i=0; i<physical_system->numObservables; i++) {
-    averagedObservables[i] /= double(numberOfMCSteps);
+    averagedObservables[i]        /= double(numberOfMCSteps);
     averagedObservablesSquared[i] /= double(numberOfMCSteps);
-    standardDeviations[i] = sqrt( averagedObservablesSquared[i] - averagedObservables[i] * averagedObservables[i] );
-    //standardDeviations[i] = sqrt((averagedObservablesSquared[i] - averagedObservables[i] * averagedObservables[i]) / double(numberOfMCSteps - 1));
+    standardDeviations[i]          = sqrt( averagedObservablesSquared[i] - averagedObservables[i] * averagedObservables[i] );
+    standardErrors[i]              = standardDeviations[i] / sqrt(double(numberOfMCSteps));
   }
 
 }
@@ -421,10 +413,10 @@ void Metropolis::writeStatistics(OutputMode output_mode, const char* filename)
       
       fprintf(checkPointFile, "\n");
     
-      fprintf(checkPointFile, "                        Observable                          Mean          Std. deviation \n");
-      fprintf(checkPointFile, "   --------------------------------------------------------------------------------------- \n");
+      fprintf(checkPointFile, "                        Observable                          Mean          Std. error of the mean \n");
+      fprintf(checkPointFile, "   ---------------------------------------------------------------------------------------------- \n");
       for (unsigned int i=0; i<physical_system -> numObservables; i++)
-        fprintf(checkPointFile, "   %45s :     %12.5f      %12.5f \n", physical_system -> observableName[i].c_str(), averagedObservables[i], standardDeviations[i]);    
+        fprintf(checkPointFile, "   %45s :     %12.5f         %12.5f \n", physical_system -> observableName[i].c_str(), averagedObservables[i], standardErrors[i]);    
       fprintf(checkPointFile, "\n"); 
 
       break;
@@ -442,12 +434,13 @@ void Metropolis::writeStatistics(OutputMode output_mode, const char* filename)
         fprintf(checkPointFile, "%12.5f      ", averagedObservables[i] / double(MCStepsPerformed));
       fprintf(checkPointFile, "\n");
       
-      fprintf(checkPointFile, "standardDeviations   ");
+      fprintf(checkPointFile, "standardErrors   ");
       for (unsigned int i=0; i<physical_system -> numObservables; i++) {
-        double temp_ave  = averagedObservables[i] / double(MCStepsPerformed);
-        double temp_ave2 = averagedObservablesSquared[i] / double(MCStepsPerformed);
+        double temp_ave       = averagedObservables[i] / double(MCStepsPerformed);
+        double temp_ave2      = averagedObservablesSquared[i] / double(MCStepsPerformed);
         standardDeviations[i] = sqrt(temp_ave2 - temp_ave*temp_ave);
-        fprintf(checkPointFile, "%12.5f      ", standardDeviations[i]);
+        standardErrors[i]     = standardDeviations[i] / sqrt(double(MCStepsPerformed));
+        fprintf(checkPointFile, "%12.5f      ", standardErrors[i]);
       }
       fprintf(checkPointFile, "\n");
       

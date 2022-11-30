@@ -12,9 +12,11 @@
 #include "PhysicalSystems/Heisenberg2D.hpp"
 #include "PhysicalSystems/Heisenberg3D.hpp"
 #include "PhysicalSystems/Ising2D.hpp"
+#include "PhysicalSystems/IsingND.hpp"
 #include "PhysicalSystems/CrystalStructure3D.hpp"
 #include "PhysicalSystems/Alloy3D.hpp"
 #include "PhysicalSystems/HeisenbergHexagonal2D.hpp"
+#include "PhysicalSystems/Ising2D_NNN.hpp"
 
 #ifdef DRIVER_MODE_QE
 #include "PhysicalSystems/QuantumEspresso/QuantumEspressoSystem.hpp"
@@ -37,11 +39,17 @@ void setSimulation(PhysicalSystem*      &physical_system,
 {
   
   // Determine Physical System 
-  //  1: QuantumExpresso
-  //  2: LSMS  
-  //  3: Heisenberg 2D
-  //  4: Ising 2D
-  //  5: ...
+  // 1:  QuantumExpresso
+  // 2:  LSMS  
+  // 3:  Heisenberg 2D
+  // 4:  Ising 2D
+  // 5:  Heisenberg 3D
+  // 6:  Customized 3D crystal structure
+  // 7:  3D alloy system
+  // 8:  Heisenberg Hexagonal 2D
+  // 9:  Ising ND
+  // 10: Ising 2D with next nearest neighbor interactions
+
   switch (simInfo.system) {
     case 1 :
 #ifdef DRIVER_MODE_QE
@@ -76,10 +84,18 @@ void setSimulation(PhysicalSystem*      &physical_system,
       physical_system = new Alloy3D(simInfo.MCInputFile);
       break;
 
-  case 8 :
-    physical_system = new HeisenbergHexagonal2D();
-    break;
-      
+    case 8 :
+      physical_system = new HeisenbergHexagonal2D();
+      break;
+
+    case 9 :
+      physical_system = new IsingND();
+      break;
+
+    case 10 :
+      physical_system = new Ising2D_NNN();
+      break;
+
     default :
       std::cerr << "Physical system not specified. \n";
       std::cerr << "Aborting...\n";

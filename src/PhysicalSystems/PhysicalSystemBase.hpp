@@ -34,7 +34,7 @@ public:
   virtual void rejectMCMove() = 0;        // restore old observables and old configurations to current ones
   
   virtual void getAdditionalObservables() {};
-  virtual void calculateThermodynamics(ObservableType*, ObservableType*, double);
+  virtual void calculateThermodynamics(std::vector<ObservableType>, std::vector<ObservableType>, double);
 
   // Construct data structures for MPI communications. Used in Replica exchanges.
   void buildMPIConfigurationType() {};
@@ -66,6 +66,12 @@ protected:
 
   void setSystemSize(unsigned int n) {
     systemSize = n;
+  }
+
+  void setSystemSize(unsigned int n, unsigned int d) {
+    systemSize = n;
+    for (unsigned int i=0; i<d-1; i++)
+      systemSize *= n;
   }
 
   void initializeObservables(unsigned int n) {
