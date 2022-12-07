@@ -62,6 +62,11 @@ void readMainInputFile(const char* FileName)
             //std::cout << "Simulation Info: lattice size = " << simInfo.spinModelLatticeSize << "\n";
             continue;
           }
+          else if (key == "ModelLatticeSize") {
+            lineStream >> simInfo.modelLatticeSize;
+            //std::cout << "Simulation Info: lattice size = " << simInfo.modelLatticeSize << "\n";
+            continue;
+          }
           else if (key == "SpinConfigInitMethod") {
             lineStream >> simInfo.spinConfigInitMethod;
             //std::cout << "Simulation Info: method to initialize spin configuration = " << simInfo.spinConfigInitMethod << "\n";
@@ -191,6 +196,10 @@ void writeSimulationInfo()
       std::cout << "   Physical system          :  2D Ising model with next nearest neighbor interactions\n";
       break; 
 
+    case 11 :
+      std::cout << "   Physical system          :  2D Hexagonal Binary Alloy model\n";
+      break;
+
     default :
       std::cerr << "   Physical system          :  ERROR! Physical system not specified. \n";
       std::cerr << "\nOWL Aborting...\n";
@@ -221,6 +230,10 @@ void writeSimulationInfo()
       
     case 6 :
       std::cout << "   MC algorithm             :  Discrete Histogram-Free Multicanonical Sampling\n";
+      break;
+
+    case 7 :
+      std::cout << "   MC algorithm             :  Simulated Annealing\n";
       break;
       
     default :

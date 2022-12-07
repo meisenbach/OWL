@@ -9,6 +9,7 @@
 #include "MonteCarloAlgorithms/ReplicaExchangeWangLandau.hpp"
 #include "MonteCarloAlgorithms/MulticanonicalSampling.hpp"
 #include "MonteCarloAlgorithms/HistogramFreeMUCA.hpp"
+#include "MonteCarloAlgorithms/SimulatedAnnealing.hpp"
 #include "PhysicalSystems/Heisenberg2D.hpp"
 #include "PhysicalSystems/Heisenberg3D.hpp"
 #include "PhysicalSystems/Ising2D.hpp"
@@ -17,6 +18,7 @@
 #include "PhysicalSystems/Alloy3D.hpp"
 #include "PhysicalSystems/HeisenbergHexagonal2D.hpp"
 #include "PhysicalSystems/Ising2D_NNN.hpp"
+#include "PhysicalSystems/BinaryAlloyHexagonal2D.hpp"
 
 #ifdef DRIVER_MODE_QE
 #include "PhysicalSystems/QuantumEspresso/QuantumEspressoSystem.hpp"
@@ -49,6 +51,7 @@ void setSimulation(PhysicalSystem*      &physical_system,
   // 8:  Heisenberg Hexagonal 2D
   // 9:  Ising ND
   // 10: Ising 2D with next nearest neighbor interactions
+  // 11: Binary Alloy Hexagonal 2D
 
   switch (simInfo.system) {
     case 1 :
@@ -96,6 +99,10 @@ void setSimulation(PhysicalSystem*      &physical_system,
       physical_system = new Ising2D_NNN();
       break;
 
+    case 11 :
+      physical_system = new BinaryAlloyHexagonal2D();
+      break;
+
     default :
       std::cerr << "Physical system not specified. \n";
       std::cerr << "Aborting...\n";
@@ -109,6 +116,7 @@ void setSimulation(PhysicalSystem*      &physical_system,
   //  4. Parallel tempering
   //  5. Replica-Exchange Wang-Landau sampling (REWL)
   //  6. Histogram-free Multicanonical sampling (discrete energy version)
+  //  7. Simulated Annealing
   switch (simInfo.algorithm) {
     case 1 :
       MC = new Metropolis( physical_system, simInfo.MCInputFile);
@@ -133,6 +141,10 @@ void setSimulation(PhysicalSystem*      &physical_system,
       
     case 6 :
       MC = new DiscreteHistogramFreeMUCA( physical_system );
+      break;
+
+    case 7 :
+      MC = new SimulatedAnnealing( physical_system, simInfo.MCInputFile );
       break;
     
     default :

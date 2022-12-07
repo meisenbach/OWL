@@ -1,0 +1,70 @@
+##########################################
+##   New / restarted simulation?        ##
+##########################################
+# 0: New simulation
+# 1: Restarted simulation
+RestartFlag  0
+
+
+##########################################
+##   Seed for random number generator   ##
+##########################################
+
+RngSeed  183083
+
+
+##########################################
+##   Physical System                    ##
+##########################################
+# 1: QuantumExpresso
+# 2: LSMS
+# 3: Heisenberg 2D
+# 4: Ising 2D
+# 5: Heisenberg 3D
+# 6: Customized crystal structure
+# 8: Heisenberg Hexagonal 2D
+#11: Binary Alloy Hexagonal 2D
+PhysicalSystem  11
+
+
+##### Inputs for PhysicalSystem=11 (Alloy models) #####
+
+# Lattice size for alloy models
+ModelLatticeSize  12
+
+##### Parameters for hexagonal 2D binary alloy model #####
+# Atom Species A B
+AtomSpecies Cu Pd
+# Concentration c_A c_B
+Concentration 0.5 0.5
+# SingleSiteEnergy A B
+SingleSiteEnergy 0.0 0.0
+# NNInteraction A-A A-B B-B 
+NNInteraction 0.0 0.0 0.0
+# NNNInteraction A-A A-B B-B
+NNNInteraction 0.0 0.00352323 0.0
+# ThreeSiteInteraction A-A-A A-A-B A-B-B B-B-B
+ThreeSiteInteraction 0.000553514 0.0486653 0.0384251 0.00290899
+##########################################
+##   Monte Carlo algorithm              ##
+##########################################
+# 1. Metropolis Sampling
+# 2. Wang-Landau Sampling
+# 3. Multicanonical Sampling (MUCA)
+# 4. (TODO) Parallel Tempering
+# 5. Replica-Exchange Wang-Landau (REWL)
+# 6. Global update MUCA 
+# 7. Simulated Annealing
+Algorithm  7
+
+##### Inputs for Metropolis sampling #####
+
+numberOfMCSteps              80000
+numberOfMCUpdatesPerStep     256
+temperature                  100.0
+
+numberOfTemperatureSteps     100
+
+checkPointInterval           900               # in seconds
+configurationWriteInterval   10000
+

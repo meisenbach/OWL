@@ -7,7 +7,8 @@ MONTE_CARLO_OBJS = MCAlgorithms.o               \
                    MulticanonicalSampling.o     \
                    WangLandauSampling.o         \
                    ReplicaExchangeWangLandau.o  \
-                   HistogramFreeMUCA.o
+                   HistogramFreeMUCA.o \
+                   SimulatedAnnealing.o
 
 default : all
 

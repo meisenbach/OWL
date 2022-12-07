@@ -8,7 +8,8 @@ PHYS_SYS_OBJS = PhysicalSystemBase.o    \
                 CrystalStructure3D.o    \
                 Alloy3D.o               \
                 HeisenbergHexagonal2D.o \
-		Ising2D_NNN.o
+		Ising2D_NNN.o           \
+                BinaryAlloyHexagonal2D.o
 
 .PHONY : default owl-qe clean 
 
