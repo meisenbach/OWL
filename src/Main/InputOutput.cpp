@@ -72,6 +72,11 @@ void readMainInputFile(const char* FileName)
             //std::cout << "Simulation Info: method to initialize spin configuration = " << simInfo.spinConfigInitMethod << "\n";
             continue;
           }
+	  else if (key == "ConfigInitMethod") {
+            lineStream >> simInfo.configInitMethod;
+            //std::cout << "Simulation Info: method to initialize configuration = " << simInfo.configInitMethod << "\n";
+            continue;
+          }
           else if (key == "SpinModelDimension") {
             lineStream >> simInfo.spinModelDimension;
             //std::cout << "Simulation Info: lattice size = " << simInfo.spinModelLatticeSize << "\n";

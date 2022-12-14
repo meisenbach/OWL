@@ -32,8 +32,13 @@ BinaryAlloyHexagonal2D::BinaryAlloyHexagonal2D(const char* alloyConfigFile, int 
   else if (simInfo.restartFlag && std::filesystem::exists("configurations/config_checkpoint.dat"))
     readAlloyConfigFile("configurations/config_checkpoint.dat");
   else
-    initializeAlloyConfiguration(initial);
-
+    {
+      if(initial == 0)
+	initializeAlloyConfiguration(simInfo.configInitMethod);
+      else
+	initializeAlloyConfiguration(initial);
+    }
+ 
   initializeObservables(1);
   observableName.push_back("Total energy, E");                            // observables[0] : total energy
   // observableName.push_back("Magnetization in x-direction, M_x");          // observables[1] : magnetization in x-direction
@@ -625,30 +630,119 @@ void BinaryAlloyHexagonal2D::initializeAlloyConfiguration(int initial)
 {
 
   int numA = Size * Size * concentration[0] / (concentration[0] + concentration[1]);
-  // int numB = Size * Size - numA;
+  int numB = Size * Size - numA;
   numPerSpecies[0] = numA;
   numPerSpecies[1] = Size * Size - numA;
 
-  printf("Initializing Alloy: %d %s, %d %s\n", numA, species[0].c_str(), Size * Size - numA, species[1].c_str());
-  
-  for (unsigned int i = 0; i < Size; i++)
-    for (unsigned int j = 0; j < Size; j++)
-      if(numA > 0) {
-	siteOccupation[i][j] = 0;
-	numA--;
-      } else {
-	siteOccupation[i][j] = 1;
-      }
+  // printf("Initializing Alloy: %d %s, %d %s\n", numA, species[0].c_str(), Size * Size - numA, species[1].c_str());
+
+  switch (initial)
+    {
+    case 1: // Honeycomb
+      numA = numB = 0;
+
+      for (unsigned int i = 0; i < Size; i++)
+	for (unsigned int j = 0; j < Size; j++)
+	  if((i + j) % 3 != 0) {
+	    siteOccupation[i][j] = 0;
+	    numA++;
+	  } else {
+	    siteOccupation[i][j] = 1;
+	    numB++;
+	  }
       
-  for (unsigned int i = 0; i < Size; i++)
-    for (unsigned int j = 0; j < Size; j++)
-      {
-	unsigned int x = unsigned(getIntRandomNumber()) % Size;
-	unsigned int y = unsigned(getIntRandomNumber()) % Size;
+      numPerSpecies[0] = numA;
+      numPerSpecies[1] = numB;
+      concentration[0] = double(numA)/double(Size * Size);
+      concentration[1] = double(numB)/double(Size * Size);
+      printf("Initializing Alloy: %d %s, %d %s\n", numA, species[0].c_str(), Size * Size - numA, species[1].c_str());
+      printf("  Honeycomb (Fixed concentration!)\n");
+      
+      break;
+    case 11: // Honeycomb
+      numA = numB = 0;
 
-	int oc = siteOccupation[i][j];
-	siteOccupation[i][j] = siteOccupation[x][y];
-	siteOccupation[x][y] = oc;
-      }
+      for (unsigned int i = 0; i < Size; i++)
+	for (unsigned int j = 0; j < Size; j++)
+	  if((i + j) % 3 != 0) {
+	    siteOccupation[i][j] = 1;
+	    numB++;
+	  } else {
+	    siteOccupation[i][j] = 0;
+	    numA++;
+	  }
+      
+      numPerSpecies[0] = numA;
+      numPerSpecies[1] = numB;
+      concentration[0] = double(numA)/double(Size * Size);
+      concentration[1] = double(numB)/double(Size * Size);
+      printf("Initializing Alloy: %d %s, %d %s\n", numA, species[0].c_str(), Size * Size - numA, species[1].c_str());
+      printf("  Honeycomb (Fixed concentration!)\n");
+      
+      break;
+    case 2: // Kagome
+      numA = numB = 0;
+      
+      for (unsigned int i = 0; i < Size; i++)
+	for (unsigned int j = 0; j < Size; j++)
+	  if((i % 2 == 1) || (j % 2 == 0)) {
+	    siteOccupation[i][j] = 0;
+	    numA++;
+	  } else {
+	    siteOccupation[i][j] = 1;
+	    numB++;
+	  }
 
+      numPerSpecies[0] = numA;
+      numPerSpecies[1] = numB;
+      concentration[0] = double(numA)/double(Size * Size);
+      concentration[1] = double(numB)/double(Size * Size);
+      printf("Initializing Alloy: %d %s, %d %s\n", numA, species[0].c_str(), Size * Size - numA, species[1].c_str());
+	    printf("  Kagome (Fixed concentration!)\n");
+
+      break;
+    case 12: // Kagome
+      numA = numB = 0;
+      
+      for (unsigned int i = 0; i < Size; i++)
+	for (unsigned int j = 0; j < Size; j++)
+	  if((i % 2 == 1) || (j % 2 == 0)) {
+	    siteOccupation[i][j] = 1;
+	    numB++;
+	  } else {
+	    siteOccupation[i][j] = 0;
+	    numA++;
+	  }
+
+      numPerSpecies[0] = numA;
+      numPerSpecies[1] = numB;
+      concentration[0] = double(numA)/double(Size * Size);
+      concentration[1] = double(numB)/double(Size * Size);
+      printf("Initializing Alloy: %d %s, %d %s\n", numA, species[0].c_str(), Size * Size - numA, species[1].c_str());
+      printf("  Kagome (Fixed concentration!)\n");
+
+      break;
+    default:
+      printf("Initializing Alloy: %d %s, %d %s\n", numA, species[0].c_str(), Size * Size - numA, species[1].c_str());
+      printf("  Random initial state.\n");
+      for (unsigned int i = 0; i < Size; i++)
+	for (unsigned int j = 0; j < Size; j++)
+	  if(numA > 0) {
+	    siteOccupation[i][j] = 0;
+	    numA--;
+	  } else {
+	    siteOccupation[i][j] = 1;
+	  }
+      
+      for (unsigned int i = 0; i < Size; i++)
+	for (unsigned int j = 0; j < Size; j++)
+	  {
+	    unsigned int x = unsigned(getIntRandomNumber()) % Size;
+	    unsigned int y = unsigned(getIntRandomNumber()) % Size;
+
+	    int oc = siteOccupation[i][j];
+	    siteOccupation[i][j] = siteOccupation[x][y];
+	    siteOccupation[x][y] = oc;
+	  }
+    }
 }

@@ -81,6 +81,17 @@ void SimulatedAnnealing::run()
       printf("   Temperature Reduction Steps: %d\n", numberOfTemperatureSteps);
     }
 
+  // initial state:
+  physical_system -> getObservables();
+  bestSequenceNumber++;
+  bestObservable0 = physical_system -> observables[0];
+  fprintf(timeSeriesFile, "# INITIAL configuration # %d @ %f\n", bestSequenceNumber, bestObservable0);
+  fprintf(timeSeriesFile, "%5d %f  %f  ", bestSequenceNumber, temperature, bestObservable0);
+  writeMCFile(thermalizationStepsPerformed);
+  sprintf(fileName, "best_configurations/initital%05d.dat", bestSequenceNumber);
+  physical_system -> writeConfiguration(10, fileName);
+  //
+
   while (numberOfTemperatureSteps > 0) {
     if (GlobalComm.thisMPIrank == 0)
       printf("   Temperature: %f (%d temperature steps remaining)\n",temperature, numberOfTemperatureSteps);
