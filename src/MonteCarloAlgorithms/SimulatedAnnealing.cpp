@@ -97,6 +97,8 @@ void SimulatedAnnealing::run()
       printf("   Temperature: %f (%d temperature steps remaining)\n",temperature, numberOfTemperatureSteps);
 
     clearObservables();
+    physical_system -> getObservables();
+    physical_system -> oldObservables[0] = physical_system -> observables[0];
     rejectedMoves = acceptedMoves = 0;
     /*
   // Thermalization (observables are not accumulated)
