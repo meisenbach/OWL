@@ -11,8 +11,10 @@
 Metropolis::Metropolis(PhysicalSystem* ps, const char* inputFile)
 {
 
-  if (GlobalComm.thisMPIrank == 0)
+  if (GlobalComm.thisMPIrank == 0) {
     printf("\nSimulation method: Metropolis sampling \n");
+    printf("\n                   Boltzmann constatnt: %f\n", simInfo.kBoltzmann);
+  }
 
   if (std::filesystem::exists(inputFile))
     readMCInputFile(inputFile);
@@ -83,7 +85,7 @@ void Metropolis::run()
       physical_system -> getObservables();
   
       // Determine acceptance
-      if ( exp((physical_system -> oldObservables[0] - physical_system -> observables[0]) / temperature ) > getRandomNumber2() )
+      if ( exp((physical_system -> oldObservables[0] - physical_system -> observables[0]) / (simInfo.kBoltzmann * temperature) ) > getRandomNumber2() )
         physical_system -> acceptMCMove(); 
       else
         physical_system -> rejectMCMove();

@@ -57,6 +57,11 @@ void readMainInputFile(const char* FileName)
             //std::cout << "Random number seed = " << simInfo.rngSeed << "\n";
             continue;
           }
+	  else if (key == "BoltzmannConstant") {
+            lineStream >> simInfo.kBoltzmann;
+            //std::cout << "Simulation Info: Boltzmann constant = " << simInfo.kBoltzmann << "\n";
+            continue;
+          }
           else if (key == "SpinModelLatticeSize") {
             lineStream >> simInfo.spinModelLatticeSize;
             //std::cout << "Simulation Info: lattice size = " << simInfo.spinModelLatticeSize << "\n";

@@ -428,7 +428,7 @@ ObservableType BinaryAlloyHexagonal2D::getTriangleEnergyDelta(unsigned int i, un
 
 ObservableType BinaryAlloyHexagonal2D::getTriangleEnergy()
 {
-    unsigned int xPlus, xMinus, yPlus, yMinus;
+  unsigned int xPlus, xMinus, yPlus, yMinus;
   ObservableType energy {0.0};
   ObservableType dEnergy;
 
@@ -467,6 +467,8 @@ ObservableType BinaryAlloyHexagonal2D::getTriangleEnergy()
         energy += (1.0/3.0)*dEnergy;
     }  
   }
+
+  // printf("Triangle Energy = %f\n",energy);
   
   return energy;
 }

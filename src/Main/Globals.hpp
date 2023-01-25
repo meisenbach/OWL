@@ -34,6 +34,8 @@ struct SimulationInfo
   // Monte Carlo move set for QE systems
   int  QEMCMoveSet           {-1};
 
+  double kBoltzmann {1.0};
+  
   // These are physical system specific:
   unsigned int spinModelLatticeSize  {1};                    // setting default to 1
   unsigned int modelLatticeSize  {1};                    // setting default to 1
